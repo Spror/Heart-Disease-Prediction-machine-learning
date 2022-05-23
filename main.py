@@ -1,27 +1,17 @@
 import pandas as pd
-import Data_exploring as eda
+import Data as DataOperations
 from sklearn.preprocessing import StandardScaler
-
+from sklearn.model_selection import train_test_split
+import training as TrainingInstructions
+from sklearn.tree import DecisionTreeClassifier
 
 def printHelp():
     print("#### HELP ####")
     print("H -> printing HELP")
     print("R -> Reading data from a csv file")
 
-def read_csv_file():
-    FileName = input("Enter csv file name: ")
-    return pd.read_csv(FileName)
 
-def print_data_analysis(data):
-    print("First  10 rows from csv file: \n")
-    print(data.head(n=10))
-    print("\n\n Info\n")
-    print(data.info())
-    print("\n\n describe\n")
-    print(data.describe())
-    eda.PrintHisto(data)
-
-def DataraProcessing():
+def DataProcessing():
     categories.remove('target')
     dataset = pd.get_dummies(Data, columns = categories)
     
@@ -33,29 +23,31 @@ def DataraProcessing():
 
 
 
-Data = read_csv_file()
-''' print_data_analysis(Data) '''
-categories = []
-continous = []
 
+categories = []
+rest = []
+
+# Podzielenie kolumn na kategorie
+Data = DataOperations.read_csv_file()
 for i in Data.columns:
     if len(Data[i].unique()) <= 10:
         categories.append(i)
     else:
-        continous.append(i)
+        rest.append(i)
 
-data_1 = DataraProcessing()
+# Modyfikacja danych w celu polepszenia zbioru do nauki
+data_1 = DataProcessing()
 
+# Podział danych 
 X = data_1.drop(columns=["target"])
 y = data_1.target
-
-print(X.head())
-print(y.head())
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
 
 
-
-
-
+model = DecisionTreeClassifier(random_state=42)
+model.fit(X_train, y_train)
+TrainingInstructions.PrintScore(model, X_train, y_train, X_test, y_test, train=True)
+TrainingInstructions.PrintScore(model, X_train, y_train, X_test, y_test, train=False)
 
 
 

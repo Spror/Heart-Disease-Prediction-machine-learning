@@ -1,6 +1,5 @@
 import argparse
-
-import sklearn
+from sklearn.preprocessing import StandardScaler
 import Data as data
 import pandas as pd
 import training as tra
@@ -16,6 +15,7 @@ if __name__ == '__main__':
     ap.add_argument("-m", "--more_text_info", action='store_true', help="Shows more text info about data from a csv file")
     ap.add_argument("-l", "--learn_model", choices=['tree', 'SVC', 'kne'], help="Learns a model by the chosen algorithm")
     ap.add_argument("-s", "--save_model", required=False, help="Saves learning model. Requires file name which will store model", type=str)
+    ap.add_argument("-lm", "--load_model", required=False, help="Loads model from a joblib file", type=str)
     args = vars(ap.parse_args())
     
 
@@ -25,9 +25,11 @@ if __name__ == '__main__':
     more_text_info = args["more_text_info"]
     learn_model = args['learn_model']
     save_model = args['save_model']
+    load_model = args['load_model']
 
     csv_file = None
     model = None
+    predictions = None
 
     if path:
         try:
@@ -67,8 +69,8 @@ if __name__ == '__main__':
                 
             model.fit(X_train, y_train)
 
-            ''' tra.PrintScore(model, X_train, y_train, X_test, y_test, train=True)
-            tra.PrintScore(model, X_train, y_train, X_test, y_test, train=False) '''
+            tra.PrintScoreTest(model, X_train, y_train)
+            tra.PrintScoreTrain(model, X_test, y_test)
             tra.PlotLearningCurve(processed_data, model)
 
         except:
@@ -83,6 +85,38 @@ if __name__ == '__main__':
             except:
                 print("YOU NEED ADD A PATH TO FILE --> -p <path>")
                 print("----------------------------------\n")
+
+    if load_model and path:
+        try:
+            model = load('Models/' + load_model + '.joblib')
+            print(model)
+            categories = []
+            rest = []
+
+            for i in csv_file.columns:
+                if len(csv_file[i].unique()) <= 10:
+                    categories.append(i)
+                else:
+                    rest.append(i)
+            categories.remove('target')
+            dataset = pd.get_dummies(csv_file, columns = categories)
+            
+            scaler = StandardScaler()
+            columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
+            dataset[columns_to_scale] = scaler.fit_transform(dataset[columns_to_scale])
+            X = dataset.drop(['target'], axis = 1)
+            y = dataset.target
+            temp_csv = csv_file
+            temp_csv.drop(['target'], axis = 1)
+            predictions = tra.PrintScoreTest(model, X, y)
+            
+            X_with_predictions = temp_csv.assign(Target = predictions)
+            X_with_predictions.to_csv(path_or_buf= "Predictions/predictions.csv")
+
+        except:
+            print("PROBABLY WRONG FILE NAME")
+            print("----------------------------------\n")
+
 
         
 

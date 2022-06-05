@@ -24,36 +24,37 @@ def DataProcessing(data,ratio):
     scaler = StandardScaler()
     columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
     dataset[columns_to_scale] = scaler.fit_transform(dataset[columns_to_scale])
-    X = data.drop(['target'], axis = 1)
-    y = data.target
+    X = dataset.drop(['target'], axis = 1)
+    y = dataset.target
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ratio, random_state=42)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ratio, random_state=42)
     return dataset, X_train, X_test ,y_train, y_test
 
-def PrintScore(model, X_train, y_train, X_test, y_test, train=True):
-    if train:
-        predictions = model.predict(X_train)
-        report = pd.DataFrame(classification_report(y_train, predictions, output_dict=True))
-        print("Results of training:\n")
-        print("######################\n")
-        print("Accuracy: " + str(accuracy_score(y_train, predictions) * 100) + "%\n")
-        print("----------------------------\n")
-        print("Report:\n" + str(report))
-        print("----------------------------\n")
-        print("Confusion Matrix:\n" + str(confusion_matrix(y_train, predictions)))
-        print("######################\n")
+def PrintScoreTrain(model, X_train, y_train):
+    predictions = model.predict(X_train)
+    report = pd.DataFrame(classification_report(y_train, predictions, output_dict=True))
+    print("Results of training:\n")
+    print("######################\n")
+    print("Accuracy: " + str(accuracy_score(y_train, predictions) * 100) + "%\n")
+    print("----------------------------\n")
+    print("Report:\n" + str(report))
+    print("----------------------------\n")
+    print("Confusion Matrix:\n" + str(confusion_matrix(y_train, predictions)))
+    print("######################\n")
+    return predictions
 
-    elif train == False:
-        predictions = model.predict(X_test)
-        report = pd.DataFrame(classification_report(y_test, predictions, output_dict=True))
-        print("Test result:\n")
-        print("######################\n")
-        print("Accuracy: " + str(accuracy_score(y_test, predictions) * 100) + "%\n")
-        print("----------------------------\n")
-        print("Report:\n" + str(report))
-        print("----------------------------\n")
-        print("Confusion Matrix:\n" + str(confusion_matrix(y_test, predictions)))
-        print("######################\n")
+def PrintScoreTest(model, X_test, y_test):
+    predictions = model.predict(X_test)
+    report = pd.DataFrame(classification_report(y_test, predictions, output_dict=True))
+    print("Test result:\n")
+    print("######################\n")
+    print("Accuracy: " + str(accuracy_score(y_test, predictions) * 100) + "%\n")
+    print("----------------------------\n")
+    print("Report:\n" + str(report))
+    print("----------------------------\n")
+    print("Confusion Matrix:\n" + str(confusion_matrix(y_test, predictions)))
+    print("######################\n")
+    return predictions
 
 def plot_learning_curve(
     estimator,

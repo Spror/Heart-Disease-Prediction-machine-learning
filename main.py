@@ -1,53 +1,89 @@
+import argparse
+
+import sklearn
+import Data as data
 import pandas as pd
-import Data as DataOperations
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-import training as TrainingInstructions
+import training as tra
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from joblib import dump, load
 
-def printHelp():
-    print("#### HELP ####")
-    print("H -> printing HELP")
-    print("R -> Reading data from a csv file")
-
-
-def DataProcessing():
-    categories.remove('target')
-    dataset = pd.get_dummies(Data, columns = categories)
+if __name__ == '__main__':
+    ap=parser = argparse.ArgumentParser(description='Heart prediction machine learning with scikit')
+    ap.add_argument("-p", "--path", required=False, help="csv file path", type=str)
+    ap.add_argument("-his", "--histograms", action='store_true', help="Shows various histograms of data from a csv file ")
+    ap.add_argument("-m", "--more_text_info", action='store_true', help="Shows more text info about data from a csv file")
+    ap.add_argument("-l", "--learn_model", choices=['tree', 'SVC', 'kne'], help="Learns a model by the chosen algorithm")
+    ap.add_argument("-s", "--save_model", required=False, help="Saves learning model. Requires file name which will store model", type=str)
+    args = vars(ap.parse_args())
     
-    scaler = StandardScaler()
-    columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
-    dataset[columns_to_scale] = scaler.fit_transform(dataset[columns_to_scale])
-
-    return dataset
 
 
+    path = args["path"]
+    histograms = args["histograms"]
+    more_text_info = args["more_text_info"]
+    learn_model = args['learn_model']
+    save_model = args['save_model']
 
+    csv_file = None
+    model = None
 
-categories = []
-rest = []
+    if path:
+        try:
+            print(path)
+            csv_file = data.read_csv_file(path)
+        except:
+            print("FILE WITH THAT NAME DOES NOT EXIST")
+            print("----------------------------------\n")
+    
+    if histograms:
+        try:
+            data.PrintHisto(csv_file)
+        except:
+            print("YOU NEED ADD A PATH TO FILE --> -p <path>")
+            print("----------------------------------\n")
 
-# Podzielenie kolumn na kategorie
-Data = DataOperations.read_csv_file()
-for i in Data.columns:
-    if len(Data[i].unique()) <= 10:
-        categories.append(i)
-    else:
-        rest.append(i)
+    if more_text_info:
+        try:
+            data.print_data_analysis(csv_file)
+        except:
+            print("YOU NEED ADD A PATH TO FILE --> -p <path>")
+            print("----------------------------------\n")
 
-# Modyfikacja danych w celu polepszenia zbioru do nauki
-data_1 = DataProcessing()
+    if learn_model:
+        try:
+            ration = float(input('Enter test size (0-1): '))
+            processed_data, X_train, X_test, y_train, y_test = tra.DataProcessing(csv_file, ration)
+            
+            if learn_model == 'tree': 
+                model = DecisionTreeClassifier(random_state=42)
+                
+            elif learn_model == 'SVC':
+                model = SVC(kernel='rbf', gamma=0.1, C=1.0)
 
-# Podział danych 
-X = data_1.drop(columns=["target"])
-y = data_1.target
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+            elif learn_model =='kne':
+                model = KNeighborsClassifier()
+                
+            model.fit(X_train, y_train)
 
+            ''' tra.PrintScore(model, X_train, y_train, X_test, y_test, train=True)
+            tra.PrintScore(model, X_train, y_train, X_test, y_test, train=False) '''
+            tra.PlotLearningCurve(processed_data, model)
 
-model = DecisionTreeClassifier(random_state=42)
-model.fit(X_train, y_train)
-TrainingInstructions.PrintScore(model, X_train, y_train, X_test, y_test, train=True)
-TrainingInstructions.PrintScore(model, X_train, y_train, X_test, y_test, train=False)
+        except:
+            print("YOU NEED ADD A PATH TO FILE --> -p <path>")
+            print("----------------------------------\n")
 
+    if save_model:
+        if learn_model: 
+            try:
+                dump(model, 'Models/' + save_model + ".joblib")
+
+            except:
+                print("YOU NEED ADD A PATH TO FILE --> -p <path>")
+                print("----------------------------------\n")
+
+        
 
 

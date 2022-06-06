@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     if learn_model:
         try:
-            ration = float(input('Enter test size (0-1): '))
+            ration = 0.2
             processed_data, X_train, X_test, y_train, y_test = tra.DataProcessing(csv_file, ration)
             
             if learn_model == 'tree': 
@@ -101,21 +101,34 @@ if __name__ == '__main__':
             categories.remove('target')
             dataset = pd.get_dummies(csv_file, columns = categories)
             
-            scaler = StandardScaler()
-            columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
-            dataset[columns_to_scale] = scaler.fit_transform(dataset[columns_to_scale])
+
             X = dataset.drop(['target'], axis = 1)
             y = dataset.target
-            temp_csv = csv_file
-            temp_csv.drop(['target'], axis = 1)
+            #temp_csv = csv_file
+            #temp_csv.drop(['target'], axis = 1)
             predictions = tra.PrintScoreTest(model, X, y)
             
-            X_with_predictions = temp_csv.assign(Target = predictions)
+            X_with_predictions = X.assign(Target = predictions)
             X_with_predictions.to_csv(path_or_buf= "Predictions/predictions.csv")
+            print("Saved as Predictions/predictions.csv")
 
         except:
             print("PROBABLY WRONG FILE NAME")
             print("----------------------------------\n")
+            
+    elif load_model:
+           # try:
+        model = load('Models/' + load_model + '.joblib')
+        print(model)
+        row_to_predict = data.EnterRowToPredict()
+        print(row_to_predict.head())
+        predictions = model.predict(row_to_predict)
+        print(predictions)
+
+            
+        #except:
+        print("PROBABLY WRONG FILE NAME")
+        print("----------------------------------\n")
 
 
         

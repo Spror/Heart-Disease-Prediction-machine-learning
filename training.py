@@ -21,14 +21,14 @@ def DataProcessing(data,ratio):
     categories.remove('target')
     dataset = pd.get_dummies(data, columns = categories)
     
-    scaler = StandardScaler()
-    columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
-    dataset[columns_to_scale] = scaler.fit_transform(dataset[columns_to_scale])
     X = dataset.drop(['target'], axis = 1)
     y = dataset.target
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ratio, random_state=42)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ratio, random_state=42)
+
     return dataset, X_train, X_test ,y_train, y_test
+
+
 
 def PrintScoreTrain(model, X_train, y_train):
     predictions = model.predict(X_train)

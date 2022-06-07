@@ -7,6 +7,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from joblib import dump, load
+from sklearn import svm
+from sklearn.model_selection import GridSearchCV
 
 if __name__ == '__main__':
     ap=parser = argparse.ArgumentParser(description='Heart prediction machine learning with scikit')
@@ -54,33 +56,42 @@ if __name__ == '__main__':
             print("----------------------------------\n")
 
     if learn_model:
-        try:
-            ration = float(input('Enter test size (0-1): '))
-            processed_data, X_train, X_test, y_train, y_test = tra.DataProcessing(csv_file, ration)
+       # try:
+        ration = float(input('Enter test size (0-1): '))
+        processed_data, X_train, X_test, y_train, y_test = tra.DataProcessing(csv_file, ration)
+        
+        if learn_model == 'tree': 
+            params = {'max_leaf_nodes': list(range(2, 100)), 'min_samples_split': [2, 3, 4]}
+            tree = DecisionTreeClassifier(random_state=42)
+            model = GridSearchCV(tree, params)
             
-            if learn_model == 'tree': 
-                model = DecisionTreeClassifier(random_state=42)
-                
-            elif learn_model == 'SVC':
-                model = SVC(kernel='rbf', gamma=0.1, C=1.0)
+        elif learn_model == 'SVC':
+            params = {'kernel':('rbf', 'poly', 'sigmoid'), 'C':[1,5,10,15,20,25,30,35]}
+            svc = SVC()
+            model = GridSearchCV(svc, params)
+            
 
-            elif learn_model =='kne':
-                model = KNeighborsClassifier()
-                
-            model.fit(X_train, y_train)
+        elif learn_model =='kne':
+            params = {'n_neighbors': [3, 5, 11, 19], 'weights': ['uniform', 'distance'],
+                      'metric': ['euclidean', 'manhattan']}
+            Kn = KNeighborsClassifier()
+            model = GridSearchCV(Kn, params)
+            
+        model.fit(X_train, y_train)
+        print("Best params:" + str(model.best_params_))
+        tra.PrintScoreTest(model.best_estimator_, X_train, y_train)
+        tra.PrintScoreTrain(model.best_estimator_, X_test, y_test)
+        tra.PlotLearningCurve(processed_data, model.best_estimator_)
 
-            tra.PrintScoreTest(model, X_train, y_train)
-            tra.PrintScoreTrain(model, X_test, y_test)
-            tra.PlotLearningCurve(processed_data, model)
-
-        except:
-            print("YOU NEED ADD A PATH TO FILE --> -p <path>")
-            print("----------------------------------\n")
+        #except:
+        print("YOU NEED ADD A PATH TO FILE --> -p <path>")
+        print("----------------------------------\n")
 
     if save_model:
         if learn_model: 
             try:
                 dump(model, 'Models/' + save_model + ".joblib")
+                print("saved as 'Models/" + save_model + ".joblib")
 
             except:
                 print("YOU NEED ADD A PATH TO FILE --> -p <path>")

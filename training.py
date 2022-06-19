@@ -4,10 +4,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.svm import SVC
 from sklearn.model_selection import learning_curve
 from sklearn.model_selection import ShuffleSplit
-from sklearn.tree import DecisionTreeClassifier
+
 
 def DataProcessing(data,ratio):
     categories = []
@@ -18,17 +17,22 @@ def DataProcessing(data,ratio):
             categories.append(i)
         else:
             rest.append(i)
+
+    scaler= StandardScaler()
+    col_to_scale = ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
+
+    data[col_to_scale] = scaler.fit_transform(data[col_to_scale])
     categories.remove('target')
     dataset = pd.get_dummies(data, columns = categories)
     
-    scaler = StandardScaler()
-    columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
-    dataset[columns_to_scale] = scaler.fit_transform(dataset[columns_to_scale])
     X = dataset.drop(['target'], axis = 1)
     y = dataset.target
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ratio, random_state=42)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ratio, random_state=42)
-    return dataset, X_train, X_test ,y_train, y_test
+
+    return dataset, X_train, X_test ,y_train, y_test, scaler
+
+
 
 def PrintScoreTrain(model, X_train, y_train):
     predictions = model.predict(X_train)

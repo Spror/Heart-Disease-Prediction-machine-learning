@@ -1,4 +1,5 @@
 import argparse
+import csv
 from sklearn.preprocessing import StandardScaler
 import Data as data
 import pandas as pd
@@ -9,6 +10,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from joblib import dump, load
 from sklearn import svm
 from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
 
 if __name__ == '__main__':
     ap=parser = argparse.ArgumentParser(description='Heart prediction machine learning with scikit')
@@ -32,6 +34,7 @@ if __name__ == '__main__':
     csv_file = None
     model = None
     predictions = None
+    Scaler = None
 
     if path:
         try:
@@ -56,41 +59,44 @@ if __name__ == '__main__':
             print("----------------------------------\n")
 
     if learn_model:
-       # try:
-        ration = float(input('Enter test size (0-1): '))
-        processed_data, X_train, X_test, y_train, y_test = tra.DataProcessing(csv_file, ration)
-        
-        if learn_model == 'tree': 
-            params = {'max_leaf_nodes': list(range(2, 100)), 'min_samples_split': [2, 3, 4]}
-            tree = DecisionTreeClassifier(random_state=42)
-            model = GridSearchCV(tree, params)
+        try:
+            ration = float(input('Enter test size (0-1): '))
+            processed_data, X_train, X_test, y_train, y_test, Scaler = tra.DataProcessing(csv_file, ration)
             
-        elif learn_model == 'SVC':
-            params = {'kernel':('rbf', 'poly', 'sigmoid'), 'C':[1,5,10,15,20,25,30,35]}
-            svc = SVC()
-            model = GridSearchCV(svc, params)
-            
+            if learn_model == 'tree': 
+                params = {'max_leaf_nodes': list(range(2, 100)), 'min_samples_split': [2, 3, 4]}
+                tree = DecisionTreeClassifier(random_state=42)
+                model = GridSearchCV(tree, params)
+                
+            elif learn_model == 'SVC':
+                params = {'kernel':('rbf', 'poly', 'sigmoid'), 'C':[1,5,10,15,20,25,30,35]}
+                svc = SVC()
+                model = GridSearchCV(svc, params)
+                
 
-        elif learn_model =='kne':
-            params = {'n_neighbors': [3, 5, 11, 19], 'weights': ['uniform', 'distance'],
-                      'metric': ['euclidean', 'manhattan']}
-            Kn = KNeighborsClassifier()
-            model = GridSearchCV(Kn, params)
-            
-        model.fit(X_train, y_train)
-        print("Best params:" + str(model.best_params_))
-        tra.PrintScoreTest(model.best_estimator_, X_train, y_train)
-        tra.PrintScoreTrain(model.best_estimator_, X_test, y_test)
-        tra.PlotLearningCurve(processed_data, model.best_estimator_)
+            elif learn_model =='kne':
+                params = {'n_neighbors': [3, 5, 11, 19], 'weights': ['uniform', 'distance'],
+                        'metric': ['euclidean', 'manhattan']}
+                Kn = KNeighborsClassifier()
+                model = GridSearchCV(Kn, params)
+                
+            model.fit(X_train, y_train)
+            print("Best params:" + str(model.best_params_))
+            model = model.best_estimator_
+            tra.PrintScoreTest(model, X_train, y_train)
+            tra.PrintScoreTrain(model, X_test, y_test)
+            tra.PlotLearningCurve(processed_data, model)
 
-        #except:
-        print("YOU NEED ADD A PATH TO FILE --> -p <path>")
-        print("----------------------------------\n")
+        except:
+            print("YOU NEED ADD A PATH TO FILE --> -p <path>")
+            print("----------------------------------\n")
 
     if save_model:
         if learn_model: 
             try:
-                dump(model, 'Models/' + save_model + ".joblib")
+
+                pipe = Pipeline([('scaler', Scaler), ('estimator', model)])
+                dump(pipe, 'Models/' + save_model + ".joblib")
                 print("saved as 'Models/" + save_model + ".joblib")
 
             except:
@@ -99,7 +105,9 @@ if __name__ == '__main__':
 
     if load_model and path:
         try:
-            model = load('Models/' + load_model + '.joblib')
+            pipe = load('Models/' + load_model + '.joblib')
+            model = pipe[1]
+            print("\n Loaded model:")
             print(model)
             categories = []
             rest = []
@@ -109,14 +117,19 @@ if __name__ == '__main__':
                     categories.append(i)
                 else:
                     rest.append(i)
+        
+
+        
+            columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
+            csv_file[columns_to_scale] = pipe[0].fit_transform(csv_file[columns_to_scale])
             categories.remove('target')
             dataset = pd.get_dummies(csv_file, columns = categories)
             
-            scaler = StandardScaler()
-            columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
-            dataset[columns_to_scale] = scaler.fit_transform(dataset[columns_to_scale])
+
             X = dataset.drop(['target'], axis = 1)
             y = dataset.target
+            
+
             temp_csv = csv_file
             temp_csv.drop(['target'], axis = 1)
             predictions = tra.PrintScoreTest(model, X, y)
@@ -130,5 +143,23 @@ if __name__ == '__main__':
 
 
         
+    elif load_model:
+        try:
+            row_to_predict =  data.EnterRowToPredict()
+
+            pipe = load('Models/' + load_model + '.joblib')
+            model = pipe[1]
+            print("\n Loaded model:")
+            print(model)
+            
+
+            columns_to_scale = ['age', 'oldpeak', 'chol', 'thalach',  'trestbps']
+            row_to_predict[columns_to_scale] = pipe[0].fit_transform(row_to_predict[columns_to_scale])
+            prediction = model.predict(row_to_predict)
+            print("Wynik predykcji (Target): " + str(prediction))
+            
+        except:
+            print("PROBABLY WRONG FILE NAME")
+            print("----------------------------------\n")
 
 

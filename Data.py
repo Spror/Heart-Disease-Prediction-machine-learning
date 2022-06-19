@@ -10,8 +10,45 @@ def read_csv_file(path):
 
 def PrintHisto(data):
     data.hist(bins=50, figsize=(20, 15))
-    plt.show()
+    plt.figure(figsize=(15, 15))
+    
+    categorical_val = []
+    continous_val = []
 
+    for column in data.columns:
+        if len(data[column].unique()) <= 10:
+            categorical_val.append(column)
+    else:
+        continous_val.append(column)
+
+    for i, column in enumerate(categorical_val, 1):
+        plt.subplot(3, 3, i)
+        data[data["target"] == 0][column].hist(bins=35, color='blue', label='Have Heart Disease = NO', alpha=0.6)
+        data[data["target"] == 1][column].hist(bins=35, color='red', label='Have Heart Disease = YES', alpha=0.6)
+        plt.legend()
+        plt.xlabel(column)
+    plt.show()
+    
+        
+    # Create another figure
+    plt.figure(figsize=(9, 7))
+
+    # Scatter with postivie examplesS
+    plt.scatter(data.age[data.target==1],
+                data.thalach[data.target==1],
+                c="salmon")
+
+    # Scatter with negative examples
+    plt.scatter(data.age[data.target==0],
+                data.thalach[data.target==0],
+                c="lightblue")
+
+    # Add some helpful info
+    plt.title("Heart Disease in function of Age and Max Heart Rate")
+    plt.xlabel("Age")
+    plt.ylabel("Max Heart Rate")
+    plt.legend(["Disease", "No Disease"]);
+    plt.show()
 
 def print_data_analysis(data):
     print("First  10 rows from csv file: \n")
@@ -155,14 +192,14 @@ def EnterRowToPredict():
         thal_[3] = 1
 
 
-    d = {'age':[age], 'sex_0':[sex_[0]], 'sex_1':[sex_[1]], 'cp_0':[cp_[0]], 'cp_1':[cp_[1]], 'cp_2':[cp_[2]],
-         'cp_3':[cp_[3]], 'trestbps':[trestbps], 'chol':[chol], 'fbs_0':[fbs_[0]], 'fbs_1':[fbs_[1]],
-         'restecg_0':[restecg_[0]], 'restecg_1':[restecg_[1]], 'restecg_2':[restecg_[2]], 'thalach':[thalach],
-         'exang_0':[exang_[0]], 'oldpeak':[oldpeak], 'slope_0': [slope_[0]], 'slope_1': [slope_[1]], 'slope_2': [slope_[2]],
+    d = {'age':[age],'trestbps':[trestbps], 'chol':[chol], 'thalach':[thalach], 'oldpeak':[oldpeak], 'sex_0':[sex_[0]], 'sex_1':[sex_[1]], 'cp_0':[cp_[0]], 'cp_1':[cp_[1]], 'cp_2':[cp_[2]],
+         'cp_3':[cp_[3]],  'fbs_0':[fbs_[0]], 'fbs_1':[fbs_[1]],
+         'restecg_0':[restecg_[0]], 'restecg_1':[restecg_[1]], 'restecg_2':[restecg_[2]], 
+         'exang_0':[exang_[0]], 'exang_1':[exang_[1]],  'slope_0': [slope_[0]], 'slope_1': [slope_[1]], 'slope_2': [slope_[2]],
          'ca_0':[ca_[0]], 'ca_1':[ca_[1]], 'ca_2':[ca_[2]], 'ca_3':[ca_[3]], 'ca_4':[ca_[4]], 'thal_0':[thal_[0]],
          'thal_1':[thal_[1]], 'thal_2':[thal_[2]], 'thal_3':[thal_[3]]}
 
     row_to_predict = pd.DataFrame(data=d)
-
+   
 
     return row_to_predict

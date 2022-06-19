@@ -41,12 +41,18 @@ Prediction of whether or not patients have heart disease according to data conta
 14. target - have disease or not (1=yes, 0=no) (= the predicted attribute)  
 
 ### Optional arguments:
-#### -h, --help ---> show this help message and exit.  
-#### -p PATH, --path PATH ---> csv file path.  
-#### -his, --histograms  ---> Shows various histograms of data from a csv file.  
-#### -m, --more_text_info ---> Shows more text info about data from a csv file.  
-#### -l {tree,SVC,kne}, --learn_model {tree,SVC,kne} ---> Learns a model by the chosen algorithm.  
-#### -s SAVE_MODEL, --save_model SAVE_MODEL---> Saves learning model. Requires file name which will store model
-#### -lm LOAD_MODEL, --load_model LOAD_MODEL ---> Loads model from a joblib file
+* -h, --help ---> show this help message and exit.  
+* -p PATH, --path PATH ---> csv file path.  
+* -his, --histograms  ---> Shows various histograms of data from a csv file.  
+* -m, --more_text_info ---> Shows more text info about data from a csv file.  
+* -l {tree,SVC,kne}, --learn_model {tree,SVC,kne} ---> Learns a model by the chosen algorithm.  
+* -s SAVE_MODEL, --save_model SAVE_MODEL---> Saves learning model. Requires file name which will store model
+* -lm LOAD_MODEL, --load_model LOAD_MODEL ---> Loads model from a joblib file
  
- 
+### Running the project
+
+```bash
+> mkdir Models
+> mkdir Predictions
+> python3 main.py <options>
+```

@@ -83,8 +83,8 @@ if __name__ == '__main__':
             model.fit(X_train, y_train)
             print("Best params:" + str(model.best_params_))
             model = model.best_estimator_
-            tra.PrintScoreTest(model, X_train, y_train)
-            tra.PrintScoreTrain(model, X_test, y_test)
+            tra.PrintScoreTest(model, X_test, y_test)
+            tra.PrintScoreTrain(model, X_train, y_train)
             tra.PlotLearningCurve(processed_data, model)
 
         except:

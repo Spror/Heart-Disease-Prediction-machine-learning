@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import seaborn as sns
 
 def read_csv_file(path):
     data = pd.read_csv(path)
@@ -48,6 +48,17 @@ def PrintHisto(data):
     plt.xlabel("Age")
     plt.ylabel("Max Heart Rate")
     plt.legend(["Disease", "No Disease"]);
+    plt.show()
+
+    corr_matrix = data.corr()
+    fig, ax = plt.subplots(figsize=(15, 15))
+    ax = sns.heatmap(corr_matrix,
+                    annot=True,
+                    linewidths=0.5,
+                    fmt=".2f",
+                    cmap="YlGnBu");
+    bottom, top = ax.get_ylim()
+    ax.set_ylim(bottom + 0.5, top - 0.5)
     plt.show()
 
 def print_data_analysis(data):
